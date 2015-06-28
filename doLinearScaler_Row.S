@@ -27,6 +27,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+.arm
 .global doLinearScaler_Row
 doLinearScaler_Row:	@ (pS0, pS1, pD, dstWidth, span)
 	ldr			ip, [sp]
@@ -34,40 +35,26 @@ doLinearScaler_Row:	@ (pS0, pS1, pD, dstWidth, span)
 	vldr.F64	d31,=#0x0f0e0d0c07060908
 	.align 3
 0:
-	subs		r3, #8
-	bxeq		lr
+	subs		r3, #2
+	bxlt		lr
 
 	vld1.32		{d0},  [r0], ip
-	vld1.32		{d16}, [r0], ip
 	vld1.32		{d1},  [r1], ip
-	vld1.32		{d17}, [r1], ip
+	vld1.32		{d4},  [r0], ip
+	vld1.32		{d5},  [r1], ip
 	vzip.8		d0, d1
-	vzip.8		d16, d17
+	vzip.8		d4, d5
 	vpaddl.u8	q1, q0
-	vpaddl.u8	q9, q8
+	vpaddl.u8	q3, q2
+	vadd.u16	d0, d2, d3
+	vadd.u16	d1, d6, d7
+
+	vtbl.8		d3,  {d0, d1},   d31
+	vtbl.8		d2,  {d0, d1},   d30
 	vadd.u16	d4, d2, d3
-	vadd.u16	d20, d18, d19
+	vshr.u16	d6, d4, #3
 
-	vld1.32		{d0},  [r0], ip
-	vld1.32		{d16}, [r0], ip
-	vld1.32		{d1},  [r1], ip
-	vld1.32		{d17}, [r1], ip
-	vzip.8		d0, d1
-	vzip.8		d16, d17
-	vpaddl.u8	q1, q0
-	vpaddl.u8	q9, q8
-	vadd.u16	d5, d2, d3
-	vadd.u16	d21, d18, d19
-
-	vtbl.8		d7,  {d4, d5},   d31
-	vtbl.8		d23, {d20, d21}, d31
-	vtbl.8		d6,  {d4, d5},   d30
-	vtbl.8		d22, {d20, d21}, d30
-	vadd.u16	d8, d6, d7
-	vadd.u16	d24, d22, d23
-	vshr.u16	d14, d8, #3
-	vshr.u16	d15, d24, #3
-
-	vmovn.u16	d29, q7
-	vst1.32		{d29}, [r2]! 
+	vmovn.u16	d0, q3
+	/*	d29 |1yY**|xVV**|0yY**|xUU**| */
+	vst1.32		{d0[0]}, [r2]!
 	b			0b
