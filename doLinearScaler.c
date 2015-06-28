@@ -46,9 +46,7 @@ doLinearScaler(const void *pSrc, size_t srcWidth, size_t srcHeight, size_t srcSt
 
 	const unsigned char *pS = (const unsigned char *)pSrc;
 	unsigned char *pD = (unsigned char *)pDst;
-	asm (
-		"vpush {d0-d7}\n"
-	);
+
 	while (dstHeight--) {
 		const unsigned char *pS0, *pS1;
 		unsigned char *pDLine;
@@ -60,9 +58,6 @@ doLinearScaler(const void *pSrc, size_t srcWidth, size_t srcHeight, size_t srcSt
 
 		doLinearScaler_Row(pS0, pS1, pDLine, dstWidth, span * 4);
 	}
-	asm (
-		"vpop {d0-d7}\n"
-	);
 }
 
 int main() {
